@@ -30,6 +30,13 @@ class Directions:
     EAST: (1, 0),
     WEST: (-1, 0),
   }
+  PROBS_STRING = {
+    NORTH: 0.12,
+    SOUTH: 0.36,
+    EAST: 0.22,
+    WEST: 0.30
+  }
+
                
 
 class Agent:
@@ -38,12 +45,13 @@ class Agent:
     sys.exit(1)
 
 class Problem:
-    def __init__(self, startState, goalState, maze, width, height):
+    def __init__(self, startState, goalState, maze, width, height, PROBS_STRING=None):
         self.start = startState
         self.maze = maze
         self.width = width
         self.height = height
         self.goal = goalState
+        self.move_probs = [PROBS_STRING]
         
 
     def getStartState(self):
@@ -62,3 +70,28 @@ class Problem:
             if nextx >= 0 and nextx < self.width and nexty >= 0 and nexty < self.height and self.maze[nexty][nextx] == 0:
                 successors.append(((nextx, nexty), state[1]  + [direction], state[2] + 1))
         return successors
+      
+    # Generates legal moves available for the agent to move from a state
+    def legalMoves(problem, row, column):
+        moves = []
+        if column - 1 >= 0:
+            moves.append('West')
+        if row + 1 < len(problem.maze):
+            moves.append('South')
+        if row - 1 >= 0:
+            moves.append('North')
+        if column + 1 < len(problem.maze[0]):
+            moves.append('East')
+
+        return moves
+
+
+class Policy:
+    def __init__(self, problem):  # problem is a Problem
+        # Signal 'no policy' by just displaying the maze there
+        self.best_actions = copy.deepcopy(problem.maze)
+
+    # TODO: create method: returns list reference like Astar using
+    #  the best_actions storing them as a list and returning them
+    def __str__(self):
+        return '\n'.join([' '.join(row) for row in self.best_actions])
