@@ -21,18 +21,18 @@ class DfsAgent(Agent):
   def getPlan(self, problem):
       # TODO: implement DFS w/ this problem
       start = problem.getStartState()
-      stack = deque()
-      stack.push(start)
+      stack = deque([start])
       visited = {start[0]}
-      while stack.size() >0:
-          state= stack.pop()
-          if state in visited:
+      while len(stack) > 0:
+          state = stack.pop()
+          if state[0] in visited:
               continue
           if problem.isGoalState(state):
              return state[1]
-          for child in problem.getSuccessors(state):
-              stack.push(child)
           visited.add(state)
+          for child in problem.getSuccessors(state):
+              if child not in visited:
+                  stack.append(child)
       return []
     #print('not defined')
     #sys.exit(1)
