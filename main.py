@@ -39,7 +39,7 @@ def run(mazeType, ai, trials, width, height):
         plan = agent.getPlan(problem)
         # record results of this agent-maze pair into the reporting data structure
         print(plan)
-        print_maze(maze, width, height)
+        print_maze(problem.maze, width, height)
   # print report results
   print('done!')
 
