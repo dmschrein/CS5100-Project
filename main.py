@@ -2,6 +2,7 @@ import argparse
 from mazegen import get_maze, ALL_MAZES, print_maze
 from agents import get_agent, ALL_AGENTS
 from util import Problem
+import time
 
 ALL = 'all'
 
@@ -14,6 +15,7 @@ def run(mazeType, ai, trials, width, height):
   for trial in range(trials):
     # create a list of agents, will only be one if `all` is not selected
     agents = []
+    time_zero = time.time()
     if ai == ALL:
       for agent in ALL_AGENTS:
         agents.append(get_agent(agent))
@@ -42,6 +44,8 @@ def run(mazeType, ai, trials, width, height):
         print_maze(maze, width, height)
   # print report results
   print('done!')
+  time_final = time.time()
+  print("Time elasped: ", time_final-time_zero)
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
