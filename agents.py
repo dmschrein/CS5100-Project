@@ -2,6 +2,7 @@ from util import Agent
 from queue import PriorityQueue
 import util
 import sys
+import copy
 
 DFS = 'dfs'
 BFS = 'bfs'
@@ -97,7 +98,16 @@ class AstarAgent(Agent):
 
     return []
   
+class Policy:
+    def __init__(self, problem):  # problem is a Problem
+        # Signal 'no policy' by just displaying the maze there
+        self.best_actions = copy.deepcopy(problem.maze)
 
+    def __str__(self):
+        return '\n'.join([' '.join(
+            [str(element) for element in row]
+        ) for row in self.best_actions])
+      
 # Generates the maximum utility value of a state from all the possible
 # utility values allowed based on possible legal moves
 # returns value and the direction
