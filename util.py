@@ -63,6 +63,20 @@ class Problem:
             if nextx >= 0 and nextx < self.width and nexty >= 0 and nexty < self.height and self.maze[nexty][nextx] == 0:
                 successors.append(((nextx, nexty), state[1]  + [direction], state[2] + 1))
         return successors
+      
+      # Generates legal moves available for the agent to move from a state
+    def legalMoves(problem, row, column):
+        moves = []
+        if column - 1 >= 0:
+            moves.append('West')
+        if row + 1 < len(problem.maze):
+            moves.append('South')
+        if row - 1 >= 0:
+            moves.append('North')
+        if column + 1 < len(problem.maze[0]):
+            moves.append('East')
+
+        return moves
 
 class Stack:
     "A container with a last-in-first-out (LIFO) queuing policy."
