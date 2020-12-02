@@ -39,12 +39,17 @@ class Agent:
     sys.exit(1)
 
 class Problem:
-    def __init__(self, startState, goalState, maze, width, height):
+    def __init__(self, startState, goalState, maze, width, height, transition_probs=None):
         self.start = startState
         self.maze = maze
         self.width = width
         self.height = height
         self.goal = goalState
+        
+        if transition_probs is None:
+          self.move_probs = [.25]*4
+        else:
+          self.move_probs = transition_probs
         
 
     def getStartState(self):
