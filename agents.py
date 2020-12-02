@@ -87,7 +87,7 @@ class AstarAgent(Agent):
     q.push(start, 0)
     while not q.isEmpty():
         state = q.pop()
-        if problem.isGoalState(state[0]):
+        if problem.isGoalState(state):
             return state[1]
         if state[0] not in visited:
             visited.add(state[0])
