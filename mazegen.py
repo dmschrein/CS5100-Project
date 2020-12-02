@@ -2,7 +2,7 @@ import argparse
 import random
 import sys
 from util import Directions
-from mazeutil import zeroes, border, pillars, has_dead_ends, fill, maze_contains, replace_all, MAZE_CHARS, PERFECT_MAZE, BRAID_MAZE, RECURSIVE_DIVISION
+from mazeutil import zeroes, border, pillars, has_dead_ends, fill, maze_contains, replace_all, MAZE_CHARS, PERFECT_MAZE, BRAID_MAZE, RECURSIVE_DIVISION, RECURSIVE_QUADRANTS
 
 ALL_MAZES = [PERFECT_MAZE, BRAID_MAZE, RECURSIVE_DIVISION]
 
@@ -168,6 +168,88 @@ def recursive_division_maze(width, height):
 
   return maze
 
+
+def divide_quadrants(maze, width, height, start, end):
+  x1, y1 = start
+  x2, y2 = end
+
+  if abs(x1-x2) == 2 and abs(y2-y1) == 2:
+    return
+  elif abs(x1-x2) == 2:
+    # must divide horizontally
+    divide_horizontal(maze, width, height, start, end)
+  elif abs(y1-y2) == 2:
+    # must divide vertically
+    divide_vertical(maze, width, height, start, end)
+  else:
+    # can divide either way
+    options = []
+    for x in range(x1+1,x2):
+      for y in range(y1+1,y2):
+        if y % 2 == 0 and x % 2 == 0:
+          options.append((x,y))
+
+    random.shuffle(options)
+    wall_x, wall_y = options.pop()
+
+    for x in range(x1+1, x2):
+      maze[wall_y][x] = 1
+    for y in range(y1+1, y2):
+      maze[y][wall_x] = 1
+      
+    # left
+    options = []
+    for x in range(x1+1, wall_x):
+      if x % 2 == 1:
+        options.append(x)
+      
+    random.shuffle(options)
+    maze[wall_y][options.pop()] = 0
+    
+    # right
+    options = []
+    for x in range(wall_x, x2):
+      if x % 2 == 1:
+        options.append(x)
+      
+    random.shuffle(options)
+    maze[wall_y][options.pop()] = 0
+
+    # up
+    options = []
+    for y in range(y1+1, wall_y):
+      if y % 2 == 1:
+        options.append(y)
+      
+    random.shuffle(options)
+    maze[options.pop()][wall_x] = 0
+    
+    # down
+    options = []
+    for y in range(wall_y, y2):
+      if y % 2 == 1:
+        options.append(y)
+      
+    random.shuffle(options)
+    maze[options.pop()][wall_x] = 0
+
+    divide_quadrants(maze, width, height, start, (wall_x, wall_y))
+    divide_quadrants(maze, width, height, (wall_x, start[1]), (end[0], wall_y))
+    divide_quadrants(maze, width, height, (start[0], wall_y), (wall_x, end[1]))
+    divide_quadrants(maze, width, height, (wall_x, wall_y), end)
+
+# this algorithm does not create a perfect maze. It promises there is at least one path between any two squares, and there can be dead ends
+# it works be recursively taking a region, slicing it horizontally AND vertically, and leaving one space open to pass through each quadrants neighbors
+# then take the resulting four regions from the split, and repeat the same operation
+# this algorithm results in a very sparse maze
+def recursive_quadrants_maze(width, height):
+  maze = zeroes(width, height)
+  border(maze, width, height)
+
+  divide_quadrants(maze, width, height, (0,0), (width-1, height-1))
+
+  return maze
+
 def print_maze(maze, width, height):
   for y in range(height):
     row = ''
@@ -187,6 +269,8 @@ def get_maze(maze_type, width, height):
     return braid_maze(width, height)
   elif maze_type == RECURSIVE_DIVISION:
     return recursive_division_maze(width, height)
+  elif maze_type == RECURSIVE_QUADRANTS:
+    return recursive_quadrants_maze(width, height)
 
     
   print('Invalid maze type')
