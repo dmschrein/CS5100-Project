@@ -52,7 +52,6 @@ class Problem:
         else:
           self.move_probs = transition_probs
         
-
     def getStartState(self):
         return (self.start, [], 0)
 
@@ -61,7 +60,7 @@ class Problem:
 
     def getSuccessors(self, state):
         self.nodes_explored += 1
-        "Returns successor states, the actions they require, and the cumulative cost."
+        
         successors = []
         for direction in Directions.LIST:
             x,y = state[0]
@@ -73,16 +72,15 @@ class Problem:
         return successors
       
       # Generates legal moves available for the agent to move from a state
-    def legalMoves(problem, row, column):
+    def legalMoves(self, row, column, grid):
+        self.nodes_explored += 1
         moves = []
-        if column - 1 >= 0:
-            moves.append('West')
-        if row + 1 < len(problem.maze):
-            moves.append('South')
-        if row - 1 >= 0:
-            moves.append('North')
-        if column + 1 < len(problem.maze[0]):
-            moves.append('East')
+
+        for direction in Directions.LIST:
+            dx, dy = Directions.TO_VECTOR[direction]
+            nextx, nexty = int(column + dx), int(row + dy)
+            if nextx >= 0 and nextx < self.width and nexty >= 0 and nexty < self.height and grid[nexty][nextx] == 0:
+                moves.append(direction)
 
         return moves
 

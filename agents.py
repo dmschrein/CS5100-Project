@@ -2,6 +2,7 @@ from util import Agent
 from queue import PriorityQueue
 import util
 import sys
+from util import Directions
 import copy
 
 DFS = 'dfs'
@@ -104,66 +105,56 @@ class Policy:
         self.best_actions = copy.deepcopy(problem.maze)
 
     def __str__(self):
+        
+        def f(dir):
+            if dir =='North':
+                return '^'
+            if dir =='South':
+                return 'v'
+            if dir =='East':
+                return '>'
+            if dir =='West':
+                return '<'
+            if dir == 0:
+                return ' '
+            if dir == 1:
+                return '█'
+            return dir
+
         return '\n'.join([' '.join(
-            [str(element) for element in row]
+            [str(f(element)) for element in row]
         ) for row in self.best_actions])
 
     def __len__(self):
-        return 0
+        max = 100000
+        x, y = (1, 1)
+        steps = 0
+        while not (y == len(self.best_actions) - 2 and x == len(self.best_actions[0]) - 2):
+            steps += 1
+            if steps > max:
+                return max
+            dx, dy = Directions.TO_VECTOR[self.best_actions[y][x]]
+            x, y = int(x + dx), int(y + dy)
+        
+        return steps
       
 # Generates the maximum utility value of a state from all the possible
 # utility values allowed based on possible legal moves
 # returns value and the direction
 def Q_max(moves, R, V_copy, i, j, problem):
     A = {a: 0 for a in moves}
-    for m in moves:
-        if m == 'North':
-            x = i
-            for p in problem.move_probs:
-                x = x - 1
-                if x >= 0:
-                    A[m] += p * (R[x][j] + (DISCOUNT_FACTOR * V_copy[x][j]))
-                else:
-                    z = x + 1 if x + 1 >= 0 else x + 2
-                    A[m] += p * (R[z][j] + (DISCOUNT_FACTOR * V_copy[z][j]))
-        elif m == 'South':
-            x = i
-            for p in problem.move_probs:
-                x = x + 1
-                if x >= len(problem.maze):
-                    continue
-                elif x < len(problem.maze):
-                    A[m] += p * (R[x][j] + (DISCOUNT_FACTOR * V_copy[x][j]))
-                else:
-                    z = x - 1 if x - 1 < len(problem.maze) else x - 2
-                    A[m] += p * (R[z][j] + (DISCOUNT_FACTOR * V_copy[z][j]))
-        elif m == 'East':
-            y = j
-            for p in problem.move_probs:
-                y = y + 1
-                if y >= len(problem.maze[0]):
-                    continue
-                elif y < len(problem.maze[0]):
-                    A[m] += p * (R[i][y] + (DISCOUNT_FACTOR * V_copy[i][y]))
-                else:
-                    z = y - 1 if y - 1 < len(problem.maze[0]) else y - 2
-                    A[m] += p * (R[i][z] + (DISCOUNT_FACTOR * V_copy[i][z]))
-        elif m == 'West':
-            y = j
-            for p in problem.move_probs:
-                y = y - 1
-                if y >= 0:
-                    A[m] += p * (R[i][y] + (DISCOUNT_FACTOR * V_copy[i][y]))
-                else:
-                    z = y + 1 if y + 1 >= 0 else y + 2
-                    A[m] += p * (R[i][z] + (DISCOUNT_FACTOR * V_copy[i][z]))
+    for m in moves:        
+        dx, dy = Directions.TO_VECTOR[m]
+        nextx, nexty = int(j + dx), int(i + dy)
+
+        A[m] += (R[nexty][nextx] + (DISCOUNT_FACTOR * V_copy[nexty][nextx]))
     max_key = max(A, key=A.get)
     return max_key, A[max_key]
 
 
 class MdpAgent(Agent):
 
-    def getPlan(self, problem, iterations=10):
+    def getPlan(self, problem, iterations=100):
         # make a copy of the maze
         grid = copy.deepcopy(problem.maze)
 
@@ -172,22 +163,23 @@ class MdpAgent(Agent):
 
         # Initial Utility Matrix
         V = [[0 for j in range(len(problem.maze[0]))] for i in range(len(problem.maze))]
-
+        
         # Reward Matrix
-        R = [[0 if problem.maze[i][j] == '-' else GOAL_REWARD if
-        problem.maze == problem.isGoalState([0]) else WALL_REWARD
-              for j in range(len(problem.maze[0]))] for i in range(len(problem.maze))]
+        R = [[GOAL_REWARD if problem.isGoalState(((j, i),)) else 
+            0 if problem.maze[i][j] == 0 else  
+            WALL_REWARD for j in range(len(problem.maze[0]))] for i in range(len(problem.maze))]
+        
         while iterations > 0:
             # Creates a copy of utility matrix for every new iteration
             V_copy = copy.deepcopy(V)
-            for i in range(len(problem.maze)):
-                for j in range(len(problem.maze[0])):
-                    # if the goal is met skip the state and go onto the next state
-                    if problem.maze[i][j] == problem.isGoalState([0]):
+            for i in range(1, len(problem.maze) - 1):
+                for j in range(1, len(problem.maze[i]) - 1):
+                    # if the goal is met, or we're on a wall, skip the state and go onto the next state
+                    if problem.isGoalState(((j, i),)) or problem.maze[i][j] == 1:
                         continue
-
+                
                     # compute the maximum possible utility value for that state along with the direction
-                    key, value = Q_max(problem.legalMoves(i, j), R, V_copy, i, j, problem)
+                    key, value = Q_max(problem.legalMoves(i, j, grid), R, V_copy, i, j, problem)
                     # remove legal moves
                     # update the utility matrix
                     V[i][j] = value

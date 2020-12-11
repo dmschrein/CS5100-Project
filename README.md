@@ -16,6 +16,7 @@ These are our CLI args:
 | `--trials` | `1` | Int | Number of trials to perform |
 | `--width` | `21` | Int | Width of maze, Must be odd |
 | `--height` | `21` | Int | Height of maze, Must be odd |
+| `--showplan` | `False` | Boolean | When true, output includes the resulting plan of each result |
 
 
 The `maze` arg defines which maze generator we will use. If this is missing, we will default to `perfect`. These are the valid options:
