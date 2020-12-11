@@ -30,6 +30,7 @@ The `ai` arg defines which ai agent we will use. If this is missing, we will def
 - `dfs`
 - `bfs`
 - `astar`
+- `mdp`
 - `all`*
 
 *All is unique because it will run all algorithms and create a report. 
